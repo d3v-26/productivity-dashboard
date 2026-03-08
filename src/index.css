@@ -1,0 +1,143 @@
+@import "tailwindcss";
+
+:root {
+  --color-bg:          #0B0B15;
+  --color-surface:     #12121F;
+  --color-border:      #1E1E30;
+  --color-text:        #E4E4F0;
+  --color-text-muted:  #525270;
+
+  --color-sage:        #7C5CFC;
+  --color-sage-light:  #6347E0;
+  --color-lavender:    #A78BFA;
+  --color-amber:       #F59E0B;
+  --color-error:       #F87171;
+
+  --glass-bg:          rgba(18, 18, 31, 0.85);
+  --glass-bg-bright:   rgba(22, 22, 40, 0.90);
+  --glass-border:      rgba(255, 255, 255, 0.06);
+  --glass-border-lit:  rgba(124, 92, 252, 0.30);
+}
+
+html { scroll-behavior: smooth; }
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 400;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Subtle ambient gradients — no image */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 10% 90%, rgba(124,92,252,0.10) 0%, transparent 45%),
+    radial-gradient(ellipse at 90% 10%, rgba(107,126,255,0.08) 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 50%, rgba(124,92,252,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 75%, rgba(167,139,250,0.06) 0%, transparent 40%),
+    radial-gradient(ellipse at 25% 20%, rgba(99,71,224,0.07) 0%, transparent 40%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Glass utilities */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-bright {
+  background: var(--glass-bg-bright);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-lit {
+  border-color: var(--glass-border-lit);
+  box-shadow: 0 0 0 1px rgba(124, 92, 252, 0.08), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+.glass-hover {
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.glass-hover:hover {
+  border-color: rgba(124, 92, 252, 0.18);
+  box-shadow: 0 4px 24px rgba(124, 92, 252, 0.06);
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* Animations */
+@keyframes check {
+  0%   { transform: scale(0.8); opacity: 0; }
+  50%  { transform: scale(1.2); }
+  100% { transform: scale(1);   opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes habit-enter {
+  from { opacity: 0; transform: translateX(-10px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes ink-flood {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+@keyframes streak-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.4) rotate(-5deg); }
+  70%  { transform: scale(0.93) rotate(2deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(124, 92, 252, 0.20); }
+  50%       { box-shadow: 0 0 28px rgba(124, 92, 252, 0.40); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+.animate-slide-up    { animation: slide-up 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
+.animate-fade-in     { animation: fade-in 0.2s ease-out; }
+.animate-habit-enter { animation: habit-enter 0.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-streak-pop  { animation: streak-pop 0.4s ease-out; }
+.checkbox-check      { animation: check 0.2s ease-out; }
+.animate-glow-pulse  { animation: glow-pulse 2s ease-in-out infinite; }
+
+.progress-shimmer {
+  background: linear-gradient(90deg,
+    var(--color-sage) 0%,
+    var(--color-sage-light) 40%,
+    #9F7FFF 60%,
+    var(--color-sage) 100%
+  );
+  background-size: 200% auto;
+  animation: shimmer 2s linear infinite;
+}
