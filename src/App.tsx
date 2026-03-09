@@ -13,6 +13,7 @@ import { CalendarGrid } from './components/calendar/CalendarGrid'
 import { Modal } from './components/ui/Modal'
 import { Button } from './components/ui/Button'
 import { exportAllData, clearAllData } from './lib/storage'
+import { parseICS } from './lib/icsParser'
 import type { Todo, Habit } from './types'
 
 export default function App() {
@@ -44,6 +45,7 @@ export default function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [confirmReset, setConfirmReset] = useState(false)
+  const [importedCount, setImportedCount] = useState<number | null>(null)
 
   // Derived
   const completedHabits = habits.filter(h => todayCompletions.has(h.id)).length
@@ -120,6 +122,26 @@ export default function App() {
     URL.revokeObjectURL(url)
   }
 
+  function handleICSImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      const text = ev.target?.result as string
+      const parsed = parseICS(text)
+      calendar.importEvents(parsed)
+      setImportedCount(parsed.length)
+    }
+    reader.readAsText(file)
+    // Reset input so same file can be re-selected
+    e.target.value = ''
+  }
+
+  function handleClearImported() {
+    calendar.clearImportedEvents()
+    setImportedCount(null)
+  }
+
   function handleReset() {
     if (!confirmReset) {
       setConfirmReset(true)
@@ -138,7 +160,7 @@ export default function App() {
       <Sidebar
         collapsed={sidebarCollapsed}
         onToggle={() => setSidebarCollapsed(c => !c)}
-        events={calendar.events}
+        events={calendar.allEvents}
       />
 
       <div
@@ -233,6 +255,46 @@ export default function App() {
         title="Settings"
       >
         <div className="space-y-6">
+          {/* Calendar import section */}
+          <div>
+            <p className="text-xs font-medium text-muted uppercase tracking-widest mb-3">Calendar</p>
+            <div className="space-y-2">
+              <label className="block">
+                <span className="sr-only">Import calendar (.ics)</span>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="w-full justify-start"
+                  onClick={() => document.getElementById('ics-file-input')?.click()}
+                >
+                  Import calendar (.ics)
+                </Button>
+                <input
+                  id="ics-file-input"
+                  type="file"
+                  accept=".ics"
+                  className="hidden"
+                  onChange={handleICSImport}
+                />
+              </label>
+              {importedCount !== null && (
+                <p className="text-xs text-muted">
+                  {importedCount} event{importedCount !== 1 ? 's' : ''} imported
+                </p>
+              )}
+              {calendar.importedEvents.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start text-muted"
+                  onClick={handleClearImported}
+                >
+                  Clear imported events ({calendar.importedEvents.length})
+                </Button>
+              )}
+            </div>
+          </div>
+
           {/* Data section */}
           <div>
             <p className="text-xs font-medium text-muted uppercase tracking-widest mb-3">Data</p>

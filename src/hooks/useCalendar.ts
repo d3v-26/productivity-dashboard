@@ -13,7 +13,7 @@ import {
 } from 'date-fns'
 import { nanoid } from 'nanoid'
 import { getStore, setStore } from '../lib/storage'
-import type { CalendarEvent, EventStore } from '../types'
+import type { CalendarEvent, EventStore, ImportedEventStore } from '../types'
 
 export interface CalendarDay {
   date: Date
@@ -27,14 +27,28 @@ function loadEvents(): CalendarEvent[] {
   return getStore<EventStore>('pl_events').events
 }
 
+function loadImportedEvents(): CalendarEvent[] {
+  return getStore<ImportedEventStore>('pl_imported_events').events
+}
+
 function persist(events: CalendarEvent[]): void {
   setStore<EventStore>('pl_events', { events, version: 1 })
 }
 
+function persistImported(events: CalendarEvent[]): void {
+  setStore<ImportedEventStore>('pl_imported_events', {
+    events,
+    importedAt: events.length > 0 ? new Date().toISOString() : null,
+  })
+}
+
 export function useCalendar() {
   const [events, setEvents] = useState<CalendarEvent[]>(loadEvents)
+  const [importedEvents, setImportedEvents] = useState<CalendarEvent[]>(loadImportedEvents)
   const [currentMonth, setCurrentMonth] = useState<Date>(() => new Date())
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
+
+  const allEvents = [...events, ...importedEvents]
 
   // Derived: 42-cell calendar grid (Sunday–Saturday, 6 weeks)
   const calendarDays: CalendarDay[] = (() => {
@@ -60,14 +74,14 @@ export function useCalendar() {
         dateKey,
         isToday: isToday(date),
         isCurrentMonth: isSameMonth(date, currentMonth),
-        events: events.filter(e => e.date === dateKey),
+        events: allEvents.filter(e => e.date === dateKey),
       }
     })
   })()
 
   // Derived: events for selected date, sorted by startTime
   const selectedDateEvents: CalendarEvent[] = selectedDate
-    ? events
+    ? allEvents
         .filter(e => e.date === selectedDate)
         .sort((a, b) => a.startTime.localeCompare(b.startTime))
     : []
@@ -113,8 +127,25 @@ export function useCalendar() {
     })
   }, [])
 
+  const importEvents = useCallback((incoming: CalendarEvent[]) => {
+    setImportedEvents(prev => {
+      const existingIds = new Set(prev.map(e => e.externalId).filter(Boolean))
+      const newEvents = incoming.filter(e => !e.externalId || !existingIds.has(e.externalId))
+      const updated = [...prev, ...newEvents]
+      persistImported(updated)
+      return updated
+    })
+  }, [])
+
+  const clearImportedEvents = useCallback(() => {
+    setImportedEvents([])
+    persistImported([])
+  }, [])
+
   return {
     events,
+    importedEvents,
+    allEvents,
     currentMonth,
     selectedDate,
     calendarDays,
@@ -126,5 +157,7 @@ export function useCalendar() {
     addEvent,
     updateEvent,
     deleteEvent,
+    importEvents,
+    clearImportedEvents,
   }
 }

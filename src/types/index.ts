@@ -52,11 +52,19 @@ export interface CalendarEvent {
   endTime: string     // "HH:MM"
   color: string       // hex
   description: string
+  source?: 'local' | 'imported'
+  externalId?: string  // UID from ICS (for dedup)
+  isReadOnly?: boolean // true for imported events
 }
 
 export interface EventStore {
   events: CalendarEvent[]
   version: 1
+}
+
+export interface ImportedEventStore {
+  events: CalendarEvent[]
+  importedAt: string | null
 }
 
 // ─── Settings ─────────────────────────────────────────────────────────────────

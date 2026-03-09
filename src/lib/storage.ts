@@ -3,6 +3,7 @@ import type {
   CompletionStore,
   TodoStore,
   EventStore,
+  ImportedEventStore,
   Settings,
 } from '../types'
 
@@ -11,6 +12,7 @@ const DEFAULTS = {
   pl_habit_completions: { completions: [], version: 1 } as CompletionStore,
   pl_todos: { todos: [], version: 1 } as TodoStore,
   pl_events: { events: [], version: 1 } as EventStore,
+  pl_imported_events: { events: [], importedAt: null } as ImportedEventStore,
   pl_settings: {
     theme: 'light',
     habitResetTime: '00:00',
